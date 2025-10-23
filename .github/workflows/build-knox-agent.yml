@@ -40,7 +40,9 @@ jobs:
       
     - name: Add Android platform
       working-directory: ./agent-app
-      run: npx cordova platform add android
+      run: |
+        npx cordova platform remove android || true
+        npx cordova platform add android
       
     - name: Build Debug APK
       working-directory: ./agent-app
