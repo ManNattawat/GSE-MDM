@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    
+    <title>GSE Knox Agent</title>
+    
+    <!-- Knox Agent Styles -->
+    <link rel="stylesheet" type="text/css" href="css/index.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <img src="img/gse-logo.png" alt="GSE" class="logo-img">
+                <h1>GSE Knox Agent</h1>
+            </div>
+            <div class="status" id="connectionStatus">
+                <span class="status-dot offline" id="statusDot"></span>
+                <span id="statusText">Initializing...</span>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Device Info Section -->
+            <div class="section">
+                <h2>Device Information</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Device ID:</label>
+                        <span id="deviceId">Loading...</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Model:</label>
+                        <span id="deviceModel">Loading...</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Android Version:</label>
+                        <span id="androidVersion">Loading...</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Knox Version:</label>
+                        <span id="knoxVersion">Loading...</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Branch Code:</label>
+                        <span id="branchCode">Loading...</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Status:</label>
+                        <span id="deviceStatus">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- System Status Section -->
+            <div class="section">
+                <h2>System Status</h2>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <label>Battery:</label>
+                        <div class="battery-indicator">
+                            <div class="battery-level" id="batteryLevel"></div>
+                            <span id="batteryText">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <label>Storage:</label>
+                        <span id="storageInfo">Loading...</span>
+                    </div>
+                    <div class="status-item">
+                        <label>Memory:</label>
+                        <span id="memoryInfo">Loading...</span>
+                    </div>
+                    <div class="status-item">
+                        <label>Network:</label>
+                        <span id="networkInfo">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Policy Status Section -->
+            <div class="section">
+                <h2>Policy Status</h2>
+                <div class="policy-list" id="policyList">
+                    <div class="policy-item">
+                        <span class="policy-name">Loading policies...</span>
+                        <span class="policy-status">...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions Section -->
+            <div class="section">
+                <h2>Actions</h2>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="knoxAgent.checkStatus()">
+                        Refresh Status
+                    </button>
+                    <button class="btn btn-secondary" onclick="knoxAgent.syncPolicies()">
+                        Sync Policies
+                    </button>
+                    <button class="btn btn-warning" onclick="knoxAgent.reportIssue()">
+                        Report Issue
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Logs Section -->
+            <div class="section">
+                <h2>Activity Log</h2>
+                <div class="log-container" id="logContainer">
+                    <div class="log-entry">
+                        <span class="log-time">Loading...</span>
+                        <span class="log-message">Initializing Knox Agent...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>&copy; 2025 GSE Enterprise Platform - Knox Agent v1.0.0</p>
+            <p>Last Updated: <span id="lastUpdate">Loading...</span></p>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="js/knox-api.js"></script>
+    <script type="text/javascript" src="js/websocket-client.js"></script>
+    <script type="text/javascript" src="js/device-controller.js"></script>
+    <script type="text/javascript" src="js/policy-manager.js"></script>
+    <script type="text/javascript" src="js/knox-agent.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+</body>
+</html>

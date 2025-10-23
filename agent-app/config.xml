@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.gse.knox.agent" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>GSE Knox Agent</name>
+    <description>GSE Samsung Knox MDM Agent for Tablet Management</description>
+    <author email="admin@gse.com" href="https://gse.com">GSE Enterprise Platform Team</author>
+    
+    <content src="index.html" />
+    
+    <access origin="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    
+    <!-- Samsung Knox Permissions -->
+    <platform name="android">
+        <allow-intent href="market:*" />
+        
+        <!-- Knox Admin Permissions -->
+        <uses-permission android:name="android.permission.DEVICE_ADMIN" />
+        <uses-permission android:name="com.samsung.android.knox.permission.KNOX_DEVICE_ADMIN" />
+        <uses-permission android:name="com.samsung.android.knox.permission.KNOX_ADVANCED_SECURITY" />
+        <uses-permission android:name="com.samsung.android.knox.permission.KNOX_APPLICATION" />
+        <uses-permission android:name="com.samsung.android.knox.permission.KNOX_KIOSK_MODE" />
+        
+        <!-- Standard Permissions -->
+        <uses-permission android:name="android.permission.INTERNET" />
+        <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+        <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+        <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+        <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+        <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+        <uses-permission android:name="android.permission.CAMERA" />
+        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+        <uses-permission android:name="android.permission.BLUETOOTH" />
+        <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+        <uses-permission android:name="android.permission.WAKE_LOCK" />
+        <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+        
+        <!-- App Management -->
+        <uses-permission android:name="android.permission.INSTALL_PACKAGES" />
+        <uses-permission android:name="android.permission.DELETE_PACKAGES" />
+        <uses-permission android:name="android.permission.CLEAR_APP_CACHE" />
+        <uses-permission android:name="android.permission.FORCE_STOP_PACKAGES" />
+        
+        <!-- Device Admin Receiver -->
+        <receiver android:name="com.gse.knox.agent.KnoxDeviceAdminReceiver"
+                  android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data android:name="android.app.device_admin"
+                       android:resource="@xml/device_admin" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+                <action android:name="android.app.action.DEVICE_ADMIN_DISABLED" />
+            </intent-filter>
+        </receiver>
+        
+        <!-- Boot Receiver -->
+        <receiver android:name="com.gse.knox.agent.BootReceiver">
+            <intent-filter android:priority="1000">
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
+        
+        <!-- Background Service -->
+        <service android:name="com.gse.knox.agent.KnoxAgentService"
+                 android:enabled="true"
+                 android:exported="false" />
+        
+        <!-- Target SDK and Min SDK -->
+        <preference name="android-minSdkVersion" value="21" />
+        <preference name="android-targetSdkVersion" value="33" />
+        <preference name="android-compileSdkVersion" value="33" />
+    </platform>
+    
+    <!-- Global Preferences -->
+    <preference name="DisallowOverscroll" value="true" />
+    <preference name="BackgroundMode" value="true" />
+    <preference name="KeepRunning" value="true" />
+    <preference name="LoadUrlTimeoutValue" value="60000" />
+    <preference name="SplashScreen" value="screen" />
+    <preference name="SplashScreenDelay" value="3000" />
+    <preference name="AutoHideSplashScreen" value="true" />
+    <preference name="ShowSplashScreenSpinner" value="false" />
+    
+    <!-- Knox Configure Integration -->
+    <preference name="KnoxConfigureEnabled" value="true" />
+    <preference name="KnoxLicenseKey" value="YOUR_KNOX_LICENSE_KEY" />
+</widget>

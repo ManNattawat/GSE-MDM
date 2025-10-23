@@ -1,0 +1,49 @@
+{
+  "name": "gse-knox-agent",
+  "version": "1.0.0",
+  "description": "GSE Samsung Knox MDM Agent",
+  "main": "www/js/index.js",
+  "scripts": {
+    "build": "cordova build android --release",
+    "build-debug": "cordova build android --debug",
+    "run": "cordova run android",
+    "prepare": "cordova prepare android",
+    "clean": "cordova clean android",
+    "add-platform": "cordova platform add android",
+    "add-plugins": "npm run add-plugin-device && npm run add-plugin-network && npm run add-plugin-geolocation && npm run add-plugin-websocket",
+    "add-plugin-device": "cordova plugin add cordova-plugin-device",
+    "add-plugin-network": "cordova plugin add cordova-plugin-network-information",
+    "add-plugin-geolocation": "cordova plugin add cordova-plugin-geolocation",
+    "add-plugin-websocket": "cordova plugin add cordova-plugin-websocket",
+    "setup": "npm run add-platform && npm run add-plugins"
+  },
+  "keywords": [
+    "knox",
+    "mdm",
+    "samsung",
+    "gse"
+  ],
+  "author": "GSE Enterprise Platform",
+  "license": "MIT",
+  "devDependencies": {
+    "cordova": "^12.0.0",
+    "cordova-android": "^12.0.0"
+  },
+  "dependencies": {
+    "cordova-plugin-device": "^2.1.0",
+    "cordova-plugin-network-information": "^3.0.0",
+    "cordova-plugin-geolocation": "^4.1.0",
+    "cordova-plugin-websocket": "^0.12.2"
+  },
+  "cordova": {
+    "platforms": [
+      "android"
+    ],
+    "plugins": {
+      "cordova-plugin-device": {},
+      "cordova-plugin-network-information": {},
+      "cordova-plugin-geolocation": {},
+      "cordova-plugin-websocket": {}
+    }
+  }
+}

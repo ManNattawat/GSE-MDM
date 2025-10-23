@@ -1,0 +1,11 @@
+# Knox Agent (Cordova) .gitignore 
+node_modules/ 
+platforms/ 
+plugins/ 
+*.log 
+.DS_Store 
+Thumbs.db 
+*.apk 
+build/ 
+# Old Android project backup 
+agent-app-backup/ 

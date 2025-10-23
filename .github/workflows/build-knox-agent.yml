@@ -1,0 +1,63 @@
+name: Build Knox Agent APK
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: agent-app/package-lock.json
+        
+    - name: Setup Java JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        api-level: 33
+        build-tools: 33.0.0
+        
+    - name: Install dependencies
+      working-directory: ./agent-app
+      run: npm ci
+      
+    - name: Add Android platform
+      working-directory: ./agent-app
+      run: npx cordova platform add android
+      
+    - name: Build Debug APK
+      working-directory: ./agent-app
+      run: npx cordova build android --debug
+      
+    - name: Build Release APK
+      working-directory: ./agent-app
+      run: npx cordova build android --release
+      
+    - name: Upload Debug APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: knox-agent-debug
+        path: agent-app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+        
+    - name: Upload Release APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: knox-agent-release
+        path: agent-app/platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk

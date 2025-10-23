@@ -1,0 +1,38 @@
+# ======================================
+# GSE-MDM Knox Agent - .gitignore
+# ======================================
+
+# โฟลเดอร์ที่ไม่ต้องการ
+agent-app-backup/
+android-sdk/
+platforms/
+plugins/
+node_modules/
+build/
+dist/
+.gradle/
+
+# ไฟล์ผลลัพธ์ (Build outputs)
+*.apk
+*.aab
+*.ipa
+
+# ไฟล์ขนาดใหญ่
+*.jar
+*.zip
+*.tar.gz
+*.exe
+
+# ไฟล์ระบบ
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
