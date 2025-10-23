@@ -46,11 +46,11 @@ jobs:
       
     - name: Build Debug APK
       working-directory: ./agent-app
-      run: npx cordova build android --debug
+      run: npx cordova build android --debug -- --stacktrace
       
     - name: Build Release APK
       working-directory: ./agent-app
-      run: npx cordova build android --release
+      run: npx cordova build android --release -- --stacktrace
       
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
