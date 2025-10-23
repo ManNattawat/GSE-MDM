@@ -47,7 +47,8 @@
         <!-- Device Admin Receiver -->
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
             <receiver android:name="com.gse.knox.agent.KnoxDeviceAdminReceiver"
-                      android:permission="android.permission.BIND_DEVICE_ADMIN">
+                      android:permission="android.permission.BIND_DEVICE_ADMIN"
+                      android:exported="true">
                 <meta-data android:name="android.app.device_admin"
                            android:resource="@xml/device_admin" />
                 <intent-filter>
@@ -57,7 +58,7 @@
             </receiver>
             
             <!-- Boot Receiver -->
-            <receiver android:name="com.gse.knox.agent.BootReceiver">
+            <receiver android:name="com.gse.knox.agent.BootReceiver" android:exported="true">
                 <intent-filter android:priority="1000">
                     <action android:name="android.intent.action.BOOT_COMPLETED" />
                     <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
