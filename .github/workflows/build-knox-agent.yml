@@ -43,6 +43,12 @@ jobs:
       run: |
         npx cordova platform remove android || true
         npx cordova platform add android
+        
+    - name: Fix Android config.xml
+      working-directory: ./agent-app
+      run: |
+        # Copy the fixed config.xml to platforms/android
+        cp config.xml platforms/android/app/src/main/res/xml/config.xml
       
     - name: Build Debug APK
       working-directory: ./agent-app
