@@ -76,7 +76,10 @@
         <!-- Target SDK and Min SDK -->
         <preference name="android-minSdkVersion" value="21" />
         <preference name="android-targetSdkVersion" value="33" />
-        <preference name="android-compileSdkVersion" value="33" />
+                <preference name="android-compileSdkVersion" value="33" />
+
+        <!-- Copy device admin resource file -->
+        <resource-file src="res/xml/device_admin.xml" target="app/src/main/res/xml/device_admin.xml" />
     </platform>
     
     <!-- Global Preferences -->

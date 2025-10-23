@@ -1,0 +1,1 @@
+Fix: Add device_admin.xml and resource-file entry
