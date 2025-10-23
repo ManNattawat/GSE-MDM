@@ -15,7 +15,7 @@
         <allow-intent href="market:*" />
         
         <!-- Knox Admin Permissions -->
-        <config-file target="AndroidManifest.xml" parent="/*">
+                <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.DEVICE_ADMIN" />
             <uses-permission android:name="com.samsung.android.knox.permission.KNOX_DEVICE_ADMIN" />
             <uses-permission android:name="com.samsung.android.knox.permission.KNOX_ADVANCED_SECURITY" />
