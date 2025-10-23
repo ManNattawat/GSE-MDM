@@ -79,7 +79,12 @@
                 <preference name="android-compileSdkVersion" value="33" />
 
         <!-- Copy device admin resource file -->
-        <resource-file src="res/xml/device_admin.xml" target="app/src/main/res/xml/device_admin.xml" />
+                <resource-file src="res/xml/device_admin.xml" target="app/src/main/res/xml/device_admin.xml" />
+
+        <!-- Knox Agent Plugin Feature -->
+        <feature name="KnoxAgentPlugin">
+            <param name="android-package" value="com.gse.knox.agent.KnoxAgentPlugin" />
+        </feature>
     </platform>
     
     <!-- Global Preferences -->

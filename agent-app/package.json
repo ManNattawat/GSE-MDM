@@ -27,12 +27,13 @@
   "license": "MIT",
   "devDependencies": {
     "cordova": "^12.0.0",
-    "cordova-android": "^12.0.0"
+    "cordova-android": "^12.0.0",
+    "knox-agent-plugin": "file:plugins/knox-agent-plugin"
   },
   "dependencies": {
     "cordova-plugin-device": "^2.1.0",
-    "cordova-plugin-network-information": "^3.0.0",
     "cordova-plugin-geolocation": "^4.1.0",
+    "cordova-plugin-network-information": "^3.0.0",
     "cordova-plugin-websocket": "^0.12.2"
   },
   "cordova": {
