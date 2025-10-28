@@ -50,7 +50,11 @@ jobs:
       
     - name: Build Release APK
       working-directory: ./agent-app
-      run: npx cordova build android --release -- --stacktrace
+      run: npx cordova build android --release -- --packageType=apk --stacktrace
+
+    - name: Show build outputs
+      working-directory: ./agent-app
+      run: ls -R platforms/android/app/build/outputs
       
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
@@ -62,4 +66,6 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: knox-agent-release
-        path: agent-app/platforms/android/app/build/outputs/apk/release/**/*.apk
+        path: |
+          agent-app/platforms/android/app/build/outputs/apk/release/*.apk
+          agent-app/platforms/android/app/build/outputs/bundle/release/*.aab
