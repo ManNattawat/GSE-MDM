@@ -66,15 +66,20 @@ jobs:
       working-directory: ./agent-app
       run: |
         echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > $HOME/android.keystore
+        APKSIGNER=$(find ${ANDROID_SDK_ROOT:-$ANDROID_HOME}/build-tools -name apksigner -type f | head -n 1)
+        if [ -z "$APKSIGNER" ]; then
+          echo "apksigner not found in build-tools" >&2
+          exit 1
+        fi
         for apk in platforms/android/app/build/outputs/apk/release/*.apk; do
           if [ -f "$apk" ]; then
-            "$ANDROID_SDK_ROOT"/build-tools/33.0.0/apksigner sign \
+            "$APKSIGNER" sign \
               --ks $HOME/android.keystore \
               --ks-pass env:ANDROID_KEYSTORE_PASSWORD \
               --key-pass env:ANDROID_KEY_PASSWORD \
               --ks-key-alias "$ANDROID_KEY_ALIAS" \
               "$apk"
-            "$ANDROID_SDK_ROOT"/build-tools/33.0.0/apksigner verify "$apk"
+            "$APKSIGNER" verify "$apk"
           fi
         done
         rm -f $HOME/android.keystore
