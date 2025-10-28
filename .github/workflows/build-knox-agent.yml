@@ -57,7 +57,7 @@ jobs:
       run: ls -R platforms/android/app/build/outputs
 
     - name: Sign release APKs
-      if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+      if: ${{ success() && (secrets.ANDROID_KEYSTORE_BASE64 != '') }}
       working-directory: ./agent-app
       env:
         ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
