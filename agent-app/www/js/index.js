@@ -1,190 +1,130 @@
-/**
- * GSE Knox Agent - Main Entry Point
- * Initializes the Knox Agent when device is ready
- * 
- * NO MOCK DATA - All initialization uses real device and server data
- */
+import './telemetry.js';
+import './knox-api.js';
+import './websocket-client.js';
+import './device-controller.js';
+import './policy-manager.js';
+import './knox-agent.js';
+import './onboarding.js';
 
-document.addEventListener('deviceready', onDeviceReady, false);
-
-/**
- * Device ready event handler
- * Called when Cordova/PhoneGap is fully loaded
- */
-function onDeviceReady() {
+const onDeviceReady = () => {
     console.log('[Knox Agent] Device ready - initializing Knox Agent...');
-    
+
     try {
-        // Initialize Knox Agent
-        if (window.knoxAgent) {
-            window.knoxAgent.initialize().catch(error => {
-                console.error('[Knox Agent] Initialization failed:', error);
-                showErrorMessage('Knox Agent initialization failed: ' + error.message);
-            });
-        } else {
+        const agent = window.knoxAgent;
+        if (!agent) {
             throw new Error('Knox Agent not found');
         }
-        
-        // Set up global error handlers
-        setupErrorHandlers();
-        
-        // Set up UI event listeners
-        setupUIEventListeners();
-        
-        // Set up app lifecycle handlers
-        setupAppLifecycleHandlers();
-        
+
+        agent.initialize().catch((error) => {
+            console.error('[Knox Agent] Initialization failed:', error);
+            showErrorMessage('Knox Agent initialization failed: ' + error.message);
+        });
+
+        setupErrorHandlers(agent);
+        setupUIEventListeners(agent);
+        setupAppLifecycleHandlers(agent);
+
         console.log('[Knox Agent] Main initialization completed');
-        
     } catch (error) {
         console.error('[Knox Agent] Failed to initialize:', error);
         showErrorMessage('Failed to initialize Knox Agent: ' + error.message);
     }
-}
+};
 
-/**
- * Set up global error handlers
- */
-function setupErrorHandlers() {
-    // Handle uncaught JavaScript errors
-    window.addEventListener('error', function(event) {
+const setupErrorHandlers = (agent) => {
+    window.addEventListener('error', (event) => {
         console.error('[Knox Agent] Uncaught error:', event.error);
-        
-        if (window.knoxAgent && window.knoxAgent.components.websocketClient) {
-            window.knoxAgent.components.websocketClient.sendErrorReport(event.error, {
+
+        if (agent?.components?.websocketClient) {
+            agent.components.websocketClient.sendErrorReport(event.error, {
                 type: 'uncaught_error',
                 filename: event.filename,
                 lineno: event.lineno,
-                colno: event.colno
+                colno: event.colno,
             });
         }
     });
-    
-    // Handle unhandled promise rejections
-    window.addEventListener('unhandledrejection', function(event) {
+
+    window.addEventListener('unhandledrejection', (event) => {
         console.error('[Knox Agent] Unhandled promise rejection:', event.reason);
-        
-        if (window.knoxAgent && window.knoxAgent.components.websocketClient) {
-            window.knoxAgent.components.websocketClient.sendErrorReport(
-                new Error(event.reason), 
-                { type: 'unhandled_promise_rejection' }
+
+        if (agent?.components?.websocketClient) {
+            agent.components.websocketClient.sendErrorReport(
+                event.reason instanceof Error ? event.reason : new Error(event.reason),
+                { type: 'unhandled_promise_rejection' },
             );
         }
     });
-}
+};
 
-/**
- * Set up UI event listeners
- */
-function setupUIEventListeners() {
-    // Refresh status button
-    const refreshButton = document.querySelector('[onclick="knoxAgent.checkStatus()"]');
+const setupUIEventListeners = (agent) => {
+    const withAgent = (handler) => (event) => {
+        event.preventDefault();
+        handler(agent);
+    };
+
+    const refreshButton = document.querySelector('[data-action="refresh-status"]');
     if (refreshButton) {
-        refreshButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (window.knoxAgent) {
-                window.knoxAgent.checkStatus();
-            }
-        });
+        refreshButton.addEventListener('click', withAgent((ag) => ag.checkStatus()));
     }
-    
-    // Sync policies button
-    const syncButton = document.querySelector('[onclick="knoxAgent.syncPolicies()"]');
+
+    const syncButton = document.querySelector('[data-action="sync-policies"]');
     if (syncButton) {
-        syncButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (window.knoxAgent) {
-                window.knoxAgent.syncPoliciesManual();
-            }
-        });
+        syncButton.addEventListener('click', withAgent((ag) => ag.syncPoliciesManual()));
     }
-    
-    // Report issue button
-    const reportButton = document.querySelector('[onclick="knoxAgent.reportIssue()"]');
+
+    const reportButton = document.querySelector('[data-action="report-issue"]');
     if (reportButton) {
-        reportButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (window.knoxAgent) {
-                window.knoxAgent.reportIssue();
-            }
-        });
+        reportButton.addEventListener('click', withAgent((ag) => ag.reportIssue()));
     }
-    
-    // Handle back button (Android)
-    document.addEventListener('backbutton', function(e) {
-        e.preventDefault();
-        
-        // Ask user if they want to exit
-        if (confirm('Are you sure you want to exit Knox Agent?')) {
+
+    document.addEventListener('backbutton', (event) => {
+        event.preventDefault();
+        if (confirm('ต้องการออกจาก Knox Agent หรือไม่?')) {
             navigator.app.exitApp();
         }
-    }, false);
-    
-    // Handle menu button (Android)
-    document.addEventListener('menubutton', function(e) {
-        showOptionsMenu();
-    }, false);
-}
+    });
 
-/**
- * Set up app lifecycle handlers
- */
-function setupAppLifecycleHandlers() {
-    // App pause (going to background)
-    document.addEventListener('pause', function() {
+    document.addEventListener('menubutton', showOptionsMenu);
+};
+
+const setupAppLifecycleHandlers = (agent) => {
+    document.addEventListener('pause', () => {
         console.log('[Knox Agent] App paused');
-        
-        if (window.knoxAgent) {
-            // Send status update before going to background
-            window.knoxAgent.sendDeviceStatus();
-        }
-    }, false);
-    
-    // App resume (coming from background)
-    document.addEventListener('resume', function() {
+        agent?.sendDeviceStatus();
+    });
+
+    document.addEventListener('resume', () => {
         console.log('[Knox Agent] App resumed');
-        
-        if (window.knoxAgent) {
-            // Check connection and sync when resuming
-            setTimeout(() => {
-                window.knoxAgent.checkStatus();
-                window.knoxAgent.syncPoliciesManual();
-            }, 1000);
-        }
-    }, false);
-    
-    // Network status changes
-    document.addEventListener('online', function() {
+        if (!agent) return;
+        setTimeout(() => {
+            agent.checkStatus();
+            agent.syncPoliciesManual();
+        }, 1000);
+    });
+
+    document.addEventListener('online', () => {
         console.log('[Knox Agent] Network online');
-        
-        if (window.knoxAgent && !window.knoxAgent.state.isConnected) {
-            // Try to reconnect when network comes back
-            setTimeout(() => {
-                window.knoxAgent.connectToServer();
-            }, 2000);
+        if (!agent?.state?.isConnected) {
+            setTimeout(() => agent?.connectToServer(), 2000);
         }
-    }, false);
-    
-    document.addEventListener('offline', function() {
+    });
+
+    document.addEventListener('offline', () => {
         console.log('[Knox Agent] Network offline');
         showStatusMessage('Network connection lost', 'warning');
-    }, false);
-}
+    });
+};
 
-/**
- * Show error message to user
- */
-function showErrorMessage(message) {
-    // Update status in UI
+const showErrorMessage = (message) => {
     const statusText = document.getElementById('statusText');
     const statusDot = document.getElementById('statusDot');
-    
+
     if (statusText && statusDot) {
         statusText.textContent = 'Error: ' + message;
         statusDot.className = 'status-dot offline';
     }
-    
-    // Add to log
+
     const logContainer = document.getElementById('logContainer');
     if (logContainer) {
         const logEntry = document.createElement('div');
@@ -195,98 +135,78 @@ function showErrorMessage(message) {
         `;
         logContainer.insertBefore(logEntry, logContainer.firstChild);
     }
-    
+
     console.error('[Knox Agent] Error:', message);
-}
+};
 
-/**
- * Show status message to user
- */
-function showStatusMessage(message, type = 'info') {
+const showStatusMessage = (message, type = 'info') => {
     const logContainer = document.getElementById('logContainer');
-    if (logContainer) {
-        const logEntry = document.createElement('div');
-        logEntry.className = `log-entry ${type}`;
-        logEntry.innerHTML = `
-            <span class="log-time">${new Date().toLocaleTimeString()}</span>
-            <span class="log-message">${message}</span>
-        `;
-        logContainer.insertBefore(logEntry, logContainer.firstChild);
-        
-        // Keep only last 50 entries
-        while (logContainer.children.length > 50) {
-            logContainer.removeChild(logContainer.lastChild);
-        }
-    }
-}
+    if (!logContainer) return;
 
-/**
- * Show options menu
- */
-function showOptionsMenu() {
-    const options = [
-        'Refresh Status',
-        'Sync Policies', 
-        'View Logs',
-        'Report Issue',
-        'About'
-    ];
-    
-    // Simple menu implementation
-    let menuText = 'Knox Agent Options:\n\n';
-    options.forEach((option, index) => {
-        menuText += `${index + 1}. ${option}\n`;
-    });
-    
-    const choice = prompt(menuText + '\nEnter option number (1-5):');
-    
-    if (choice && window.knoxAgent) {
-        switch (choice) {
-            case '1':
-                window.knoxAgent.checkStatus();
-                break;
-            case '2':
-                window.knoxAgent.syncPoliciesManual();
-                break;
-            case '3':
-                showLogDetails();
-                break;
-            case '4':
-                window.knoxAgent.reportIssue();
-                break;
-            case '5':
-                showAboutDialog();
-                break;
-        }
-    }
-}
+    const logEntry = document.createElement('div');
+    logEntry.className = `log-entry ${type}`;
+    logEntry.innerHTML = `
+        <span class="log-time">${new Date().toLocaleTimeString()}</span>
+        <span class="log-message">${message}</span>
+    `;
+    logContainer.insertBefore(logEntry, logContainer.firstChild);
 
-/**
- * Show detailed logs
- */
-function showLogDetails() {
+    while (logContainer.children.length > 50) {
+        logContainer.removeChild(logContainer.lastChild);
+    }
+};
+
+const showOptionsMenu = () => {
+    const options = ['Refresh Status', 'Sync Policies', 'View Logs', 'Report Issue', 'About'];
+    const menuText = options.map((option, index) => `${index + 1}. ${option}`).join('\n');
+    const choice = prompt(`Knox Agent Options:\n\n${menuText}\n\nEnter option number (1-5):`);
+
+    const agent = window.knoxAgent;
+    if (!choice || !agent) return;
+
+    switch (choice) {
+        case '1':
+            agent.checkStatus();
+            break;
+        case '2':
+            agent.syncPoliciesManual();
+            break;
+        case '3':
+            showLogDetails();
+            break;
+        case '4':
+            agent.reportIssue();
+            break;
+        case '5':
+            showAboutDialog(agent);
+            break;
+        default:
+            break;
+    }
+};
+
+const showLogDetails = () => {
     const logContainer = document.getElementById('logContainer');
-    if (logContainer) {
-        const logs = Array.from(logContainer.children).map(entry => {
-            const time = entry.querySelector('.log-time').textContent;
-            const message = entry.querySelector('.log-message').textContent;
+    if (!logContainer) return;
+
+    const logs = Array.from(logContainer.children)
+        .map((entry) => {
+            const time = entry.querySelector('.log-time')?.textContent || '';
+            const message = entry.querySelector('.log-message')?.textContent || '';
             return `${time}: ${message}`;
-        }).join('\n');
-        
-        alert('Recent Logs:\n\n' + logs);
-    }
-}
+        })
+        .join('\n');
 
-/**
- * Show about dialog
- */
-function showAboutDialog() {
-    const deviceInfo = window.knoxAgent ? window.knoxAgent.state.deviceInfo : null;
-    
+    alert(`Recent Logs:\n\n${logs}`);
+};
+
+const showAboutDialog = (agent) => {
+    const deviceInfo = agent?.state?.deviceInfo;
+
     let aboutText = 'GSE Knox Agent\n';
     aboutText += 'Version: 1.0.0\n';
-    aboutText += 'Build: ' + new Date().toISOString().split('T')[0] + '\n\n';
-    
+    aboutText += `Build: ${new Date().toISOString().split('T')[0]}\n\n`;
+
     if (deviceInfo) {
         aboutText += 'Device Information:\n';
         aboutText += `Device ID: ${deviceInfo.device_id}\n`;
@@ -295,48 +215,45 @@ function showAboutDialog() {
         aboutText += `Branch: ${deviceInfo.branch_code}\n`;
         aboutText += `Knox: ${deviceInfo.knox_version || 'N/A'}\n`;
     }
-    
+
     aboutText += '\n© 2025 GSE Enterprise Platform';
-    
+
     alert(aboutText);
-}
+};
 
-/**
- * Handle app initialization timeout
- */
-setTimeout(function() {
-    if (!window.knoxAgent || !window.knoxAgent.state.isInitialized) {
-        console.warn('[Knox Agent] Initialization timeout - may be running in browser');
-        
-        // If running in browser (for testing), show a warning
-        if (typeof device === 'undefined') {
-            showStatusMessage('Running in browser mode - Knox features not available', 'warning');
-            
-            // Initialize with limited functionality for testing
-            if (window.knoxAgent) {
-                window.knoxAgent.state.deviceInfo = {
-                    device_id: 'browser-test-' + Date.now(),
-                    model: 'Browser',
-                    version: 'Web',
-                    branch_code: '001',
-                    status: 'testing'
-                };
-                
-                window.knoxAgent.updateDeviceInfoUI();
-                window.knoxAgent.updateConnectionStatus('offline', 'Browser mode');
-            }
-        }
+const initTimeout = setTimeout(() => {
+    const agent = window.knoxAgent;
+    if (agent?.state?.isInitialized) {
+        return;
     }
-}, 10000); // 10 second timeout
 
-/**
- * Export functions for global access
- */
+    console.warn('[Knox Agent] Initialization timeout - may be running in browser');
+
+    if (typeof device === 'undefined' && agent) {
+        showStatusMessage('Running in browser mode - Knox features not available', 'warning');
+
+        agent.state.deviceInfo = {
+            device_id: `browser-test-${Date.now()}`,
+            model: 'Browser',
+            version: 'Web',
+            branch_code: '001',
+            status: 'testing',
+        };
+
+        agent.updateDeviceInfoUI();
+        agent.updateConnectionStatus('offline', 'Browser mode');
+    }
+}, 10000);
+
+document.addEventListener('deviceready', onDeviceReady, false);
+
 window.knoxAgentUI = {
-    showErrorMessage: showErrorMessage,
-    showStatusMessage: showStatusMessage,
-    showOptionsMenu: showOptionsMenu,
-    showAboutDialog: showAboutDialog
+    showErrorMessage,
+    showStatusMessage,
+    showOptionsMenu,
+    showAboutDialog,
 };
 
 console.log('[Knox Agent] Main script loaded');
+
+export {};
