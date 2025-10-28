@@ -15,13 +15,15 @@
         <allow-intent href="market:*" />
         
         <!-- Knox Admin Permissions -->
-                <config-file target="AndroidManifest.xml" parent="/manifest">
+        <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.DEVICE_ADMIN" />
             <uses-permission android:name="com.samsung.android.knox.permission.KNOX_DEVICE_ADMIN" />
             <uses-permission android:name="com.samsung.android.knox.permission.KNOX_ADVANCED_SECURITY" />
             <uses-permission android:name="com.samsung.android.knox.permission.KNOX_APPLICATION" />
             <uses-permission android:name="com.samsung.android.knox.permission.KNOX_KIOSK_MODE" />
-            
+            <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+            <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
             <!-- Standard Permissions -->
             <uses-permission android:name="android.permission.INTERNET" />
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -46,7 +48,7 @@
         
         <!-- Device Admin Receiver -->
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
-            <receiver android:name="com.gse.knox.agent.KnoxDeviceAdminReceiver"
+            <receiver android:name="com.gse.knox.agent.GseDeviceAdminReceiver"
                       android:permission="android.permission.BIND_DEVICE_ADMIN"
                       android:exported="true">
                 <meta-data android:name="android.app.device_admin"

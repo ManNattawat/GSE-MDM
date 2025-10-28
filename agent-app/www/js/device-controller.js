@@ -1,15 +1,12 @@
 /**
  * Device Controller for GSE Knox Agent
- * Handles device control operations via Samsung Knox API
- * 
- * NO MOCK DATA - All operations use real Samsung Knox APIs
+ * Handles device control operations via native Android APIs (DevicePolicyManager, etc.)
+ * through the Cordova plugin (KnoxAgentPlugin).
  */
 
 class DeviceController {
-    constructor(knoxAPI) {
-        this.knoxAPI = knoxAPI;
+    constructor() {
         this.isInitialized = false;
-        
         this.initialize();
     }
     
@@ -20,10 +17,11 @@ class DeviceController {
         try {
             console.log('[Device Controller] Initializing...');
             
-            if (!this.knoxAPI) {
-                throw new Error('Knox API not provided');
+            if (!window.nativeControls) {
+                throw new Error('nativeControls bridge not available');
             }
             
+            await window.nativeControls.initialize();
             this.isInitialized = true;
             console.log('[Device Controller] Initialized successfully');
             
@@ -35,7 +33,7 @@ class DeviceController {
     
     /**
      * Lock device immediately
-     * NO MOCK DATA - Real device lock via Knox API
+     * NO MOCK DATA - Real device lock via native controls
      */
     async lockDevice() {
         try {
@@ -45,34 +43,19 @@ class DeviceController {
                 throw new Error('Device controller not initialized');
             }
             
-            const result = await this.knoxAPI.lockDevice();
-            
-            if (result.success) {
-                console.log('[Device Controller] Device locked successfully');
-                return {
-                    success: true,
-                    action: 'lock',
-                    timestamp: new Date().toISOString(),
-                    result: result.result
-                };
-            } else {
-                throw new Error(result.error || 'Failed to lock device');
-            }
+            await window.nativeControls.lockNow();
+            console.log('[Device Controller] Device locked successfully');
+            return this.#success('lock');
             
         } catch (error) {
             console.error('[Device Controller] Failed to lock device:', error);
-            return {
-                success: false,
-                action: 'lock',
-                error: error.message,
-                timestamp: new Date().toISOString()
-            };
+            return this.#failure('lock', error);
         }
     }
     
     /**
      * Unlock device
-     * NO MOCK DATA - Real device unlock via Knox API
+     * NO MOCK DATA - Real device unlock via native controls
      */
     async unlockDevice() {
         try {
@@ -82,34 +65,18 @@ class DeviceController {
                 throw new Error('Device controller not initialized');
             }
             
-            const result = await this.knoxAPI.unlockDevice();
-            
-            if (result.success) {
-                console.log('[Device Controller] Device unlocked successfully');
-                return {
-                    success: true,
-                    action: 'unlock',
-                    timestamp: new Date().toISOString(),
-                    result: result.result
-                };
-            } else {
-                throw new Error(result.error || 'Failed to unlock device');
-            }
+            // Non-DeviceOwner modeไม่มี API ปลดล็อกได้โดยตรง อาจใช้ Accessibility automation
+            throw new Error('Unlock device is not supported without Knox');
             
         } catch (error) {
             console.error('[Device Controller] Failed to unlock device:', error);
-            return {
-                success: false,
-                action: 'unlock',
-                error: error.message,
-                timestamp: new Date().toISOString()
-            };
+            return this.#failure('unlock', error);
         }
     }
     
     /**
      * Wipe device (factory reset)
-     * NO MOCK DATA - Real device wipe via Knox API
+     * NO MOCK DATA - Real device wipe via native controls
      */
     async wipeDevice() {
         try {
@@ -134,34 +101,19 @@ class DeviceController {
                 };
             }
             
-            const result = await this.knoxAPI.wipeDevice();
-            
-            if (result.success) {
-                console.log('[Device Controller] Device wipe initiated successfully');
-                return {
-                    success: true,
-                    action: 'wipe',
-                    timestamp: new Date().toISOString(),
-                    result: result.result
-                };
-            } else {
-                throw new Error(result.error || 'Failed to wipe device');
-            }
+            await window.nativeControls.wipeDevice();
+            console.log('[Device Controller] Device wipe initiated successfully');
+            return this.#success('wipe');
             
         } catch (error) {
             console.error('[Device Controller] Failed to wipe device:', error);
-            return {
-                success: false,
-                action: 'wipe',
-                error: error.message,
-                timestamp: new Date().toISOString()
-            };
+            return this.#failure('wipe', error);
         }
     }
     
     /**
      * Reboot device
-     * NO MOCK DATA - Real device reboot via Knox API
+     * NO MOCK DATA - Real device reboot via native controls
      */
     async rebootDevice() {
         try {
@@ -171,34 +123,19 @@ class DeviceController {
                 throw new Error('Device controller not initialized');
             }
             
-            const result = await this.knoxAPI.rebootDevice();
-            
-            if (result.success) {
-                console.log('[Device Controller] Device reboot initiated successfully');
-                return {
-                    success: true,
-                    action: 'reboot',
-                    timestamp: new Date().toISOString(),
-                    result: result.result
-                };
-            } else {
-                throw new Error(result.error || 'Failed to reboot device');
-            }
+            await window.nativeControls.rebootDevice();
+            console.log('[Device Controller] Device reboot initiated successfully');
+            return this.#success('reboot');
             
         } catch (error) {
             console.error('[Device Controller] Failed to reboot device:', error);
-            return {
-                success: false,
-                action: 'reboot',
-                error: error.message,
-                timestamp: new Date().toISOString()
-            };
+            return this.#failure('reboot', error);
         }
     }
     
     /**
      * Enable Kiosk Mode
-     * NO MOCK DATA - Real kiosk mode via Knox API
+     * NO MOCK DATA - Real kiosk mode via native controls
      */
     async enableKioskMode(config = {}) {
         try {
@@ -208,39 +145,21 @@ class DeviceController {
                 throw new Error('Device controller not initialized');
             }
             
-            const allowedApps = config.allowedApps || ['com.gse.pos'];
-            const result = await this.knoxAPI.enableKioskMode(allowedApps);
-            
-            if (result.success) {
-                console.log('[Device Controller] Kiosk mode enabled successfully');
-                return {
-                    success: true,
-                    action: 'enable_kiosk',
-                    timestamp: new Date().toISOString(),
-                    config: {
-                        allowedApps: allowedApps,
-                        ...config
-                    },
-                    result: result.result
-                };
-            } else {
-                throw new Error(result.error || 'Failed to enable kiosk mode');
-            }
+            const allowedApps = config.allowedApps || [cordova.platformId === 'android' ? cordova.appInfo && cordova.appInfo.appId : 'com.gse.knox.agent'];
+            await window.nativeControls.setLockTaskPackages(allowedApps);
+            await window.nativeControls.startLockTask();
+            console.log('[Device Controller] Kiosk mode enabled successfully');
+            return this.#success('enable_kiosk', { allowedApps });
             
         } catch (error) {
             console.error('[Device Controller] Failed to enable kiosk mode:', error);
-            return {
-                success: false,
-                action: 'enable_kiosk',
-                error: error.message,
-                timestamp: new Date().toISOString()
-            };
+            return this.#failure('enable_kiosk', error);
         }
     }
     
     /**
      * Disable Kiosk Mode
-     * NO MOCK DATA - Real kiosk mode disable via Knox API
+     * NO MOCK DATA - Real kiosk mode disable via native controls
      */
     async disableKioskMode() {
         try {
@@ -250,34 +169,19 @@ class DeviceController {
                 throw new Error('Device controller not initialized');
             }
             
-            const result = await this.knoxAPI.disableKioskMode();
-            
-            if (result.success) {
-                console.log('[Device Controller] Kiosk mode disabled successfully');
-                return {
-                    success: true,
-                    action: 'disable_kiosk',
-                    timestamp: new Date().toISOString(),
-                    result: result.result
-                };
-            } else {
-                throw new Error(result.error || 'Failed to disable kiosk mode');
-            }
+            await window.nativeControls.stopLockTask();
+            console.log('[Device Controller] Kiosk mode disabled successfully');
+            return this.#success('disable_kiosk');
             
         } catch (error) {
             console.error('[Device Controller] Failed to disable kiosk mode:', error);
-            return {
-                success: false,
-                action: 'disable_kiosk',
-                error: error.message,
-                timestamp: new Date().toISOString()
-            };
+            return this.#failure('disable_kiosk', error);
         }
     }
     
     /**
      * Take screenshot
-     * NO MOCK DATA - Real screenshot via Knox API
+     * NO MOCK DATA - Real screenshot (requires media projection consent)
      */
     async takeScreenshot() {
         try {
@@ -287,160 +191,66 @@ class DeviceController {
                 throw new Error('Device controller not initialized');
             }
             
-            const result = await this.knoxAPI.takeScreenshot();
-            
-            if (result.success) {
-                console.log('[Device Controller] Screenshot taken successfully');
-                return {
-                    success: true,
-                    action: 'screenshot',
-                    timestamp: new Date().toISOString(),
-                    result: result.result
-                };
-            } else {
-                throw new Error(result.error || 'Failed to take screenshot');
-            }
+            throw new Error('Screenshot requires media projection consent flow, implement separately');
             
         } catch (error) {
             console.error('[Device Controller] Failed to take screenshot:', error);
-            return {
-                success: false,
-                action: 'screenshot',
-                error: error.message,
-                timestamp: new Date().toISOString()
-            };
+            return this.#failure('screenshot', error);
         }
     }
     
     /**
      * Install application
-     * NO MOCK DATA - Real app installation via Knox API
+     * NO MOCK DATA - Placeholder for PackageInstaller flow
      */
     async installApplication(apkUrl) {
-        try {
-            console.log('[Device Controller] Installing application:', apkUrl);
-            
-            if (!this.isInitialized) {
-                throw new Error('Device controller not initialized');
-            }
-            
-            if (!apkUrl) {
-                throw new Error('APK URL is required');
-            }
-            
-            const result = await this.knoxAPI.installApplication(apkUrl);
-            
-            if (result.success) {
-                console.log('[Device Controller] Application installation initiated successfully');
-                return {
-                    success: true,
-                    action: 'install_app',
-                    timestamp: new Date().toISOString(),
-                    apkUrl: apkUrl,
-                    result: result.result
-                };
-            } else {
-                throw new Error(result.error || 'Failed to install application');
-            }
-            
-        } catch (error) {
-            console.error('[Device Controller] Failed to install application:', error);
-            return {
-                success: false,
-                action: 'install_app',
-                error: error.message,
-                apkUrl: apkUrl,
-                timestamp: new Date().toISOString()
-            };
+        console.log('[Device Controller] Installing application:', apkUrl);
+        if (!this.isInitialized) {
+            return this.#failure('install_app', new Error('Device controller not initialized'), { apkUrl });
         }
+
+        if (!apkUrl) {
+            return this.#failure('install_app', new Error('APK URL is required'));
+        }
+
+        // TODO: Implement PackageInstaller flow (download APK, trigger install Intent)
+        return this.#failure('install_app', new Error('Remote APK install not yet implemented'), { apkUrl });
     }
     
     /**
      * Uninstall application
-     * NO MOCK DATA - Real app uninstallation via Knox API
+     * NO MOCK DATA - Placeholder for uninstall flow
      */
     async uninstallApplication(packageName) {
-        try {
-            console.log('[Device Controller] Uninstalling application:', packageName);
-            
-            if (!this.isInitialized) {
-                throw new Error('Device controller not initialized');
-            }
-            
-            if (!packageName) {
-                throw new Error('Package name is required');
-            }
-            
-            const result = await this.knoxAPI.uninstallApplication(packageName);
-            
-            if (result.success) {
-                console.log('[Device Controller] Application uninstallation initiated successfully');
-                return {
-                    success: true,
-                    action: 'uninstall_app',
-                    timestamp: new Date().toISOString(),
-                    packageName: packageName,
-                    result: result.result
-                };
-            } else {
-                throw new Error(result.error || 'Failed to uninstall application');
-            }
-            
-        } catch (error) {
-            console.error('[Device Controller] Failed to uninstall application:', error);
-            return {
-                success: false,
-                action: 'uninstall_app',
-                error: error.message,
-                packageName: packageName,
-                timestamp: new Date().toISOString()
-            };
+        console.log('[Device Controller] Uninstalling application:', packageName);
+        if (!this.isInitialized) {
+            return this.#failure('uninstall_app', new Error('Device controller not initialized'), { packageName });
         }
+
+        if (!packageName) {
+            return this.#failure('uninstall_app', new Error('Package name is required'));
+        }
+
+        // TODO: Implement uninstall via PackageInstaller APIs
+        return this.#failure('uninstall_app', new Error('Remote uninstall not yet implemented'), { packageName });
     }
     
     /**
      * Enable/Disable application
-     * NO MOCK DATA - Real app state change via Knox API
+     * NO MOCK DATA - Real app state change (requires package manager APIs)
      */
     async setApplicationState(packageName, enabled) {
-        try {
-            console.log(`[Device Controller] ${enabled ? 'Enabling' : 'Disabling'} application:`, packageName);
-            
-            if (!this.isInitialized) {
-                throw new Error('Device controller not initialized');
-            }
-            
-            if (!packageName) {
-                throw new Error('Package name is required');
-            }
-            
-            const result = await this.knoxAPI.setApplicationState(packageName, enabled);
-            
-            if (result.success) {
-                console.log(`[Device Controller] Application ${enabled ? 'enabled' : 'disabled'} successfully`);
-                return {
-                    success: true,
-                    action: 'set_app_state',
-                    timestamp: new Date().toISOString(),
-                    packageName: packageName,
-                    enabled: enabled,
-                    result: result.result
-                };
-            } else {
-                throw new Error(result.error || `Failed to ${enabled ? 'enable' : 'disable'} application`);
-            }
-            
-        } catch (error) {
-            console.error('[Device Controller] Failed to change application state:', error);
-            return {
-                success: false,
-                action: 'set_app_state',
-                error: error.message,
-                packageName: packageName,
-                enabled: enabled,
-                timestamp: new Date().toISOString()
-            };
+        console.log(`[Device Controller] ${enabled ? 'Enabling' : 'Disabling'} application:`, packageName);
+        if (!this.isInitialized) {
+            return this.#failure('set_app_state', new Error('Device controller not initialized'), { packageName, enabled });
         }
+
+        if (!packageName) {
+            return this.#failure('set_app_state', new Error('Package name is required'));
+        }
+
+        // TODO: Implement application state management when Device Owner APIs available
+        return this.#failure('set_app_state', new Error('Application state change not yet implemented'), { packageName, enabled });
     }
     
     /**
@@ -629,18 +439,6 @@ class DeviceController {
                     result = await this.setUSBDebuggingEnabled(parameters.enabled);
                     break;
                     
-                case 'install_app':
-                    result = await this.installApplication(parameters.apkUrl);
-                    break;
-                    
-                case 'uninstall_app':
-                    result = await this.uninstallApplication(parameters.packageName);
-                    break;
-                    
-                case 'set_app_state':
-                    result = await this.setApplicationState(parameters.packageName, parameters.enabled);
-                    break;
-                    
                 default:
                     throw new Error(`Unknown command: ${command}`);
             }
@@ -658,5 +456,24 @@ class DeviceController {
                 timestamp: new Date().toISOString()
             };
         }
+    }
+
+    #success(action, extra = {}) {
+        return {
+            success: true,
+            action,
+            timestamp: new Date().toISOString(),
+            ...extra
+        };
+    }
+
+    #failure(action, error, extra = {}) {
+        return {
+            success: false,
+            action,
+            error: error && error.message ? error.message : String(error),
+            timestamp: new Date().toISOString(),
+            ...extra
+        };
     }
 }

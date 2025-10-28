@@ -482,14 +482,22 @@ class KnoxAPI {
      */
     async getBatteryInfo() {
         return new Promise((resolve) => {
-            if (navigator.getBattery) {
-                navigator.getBattery().then(battery => {
-                    const batteryInfo = {
-                        level: Math.round(battery.level * 100),
-                        charging: battery.charging,
-                        chargingTime: battery.chargingTime,
-                        dischargingTime: battery.dischargingTime
-                    };
+            if (typeof cordova !== 'undefined' && cordova.plugins && cordova.plugins.batteryStatus) {
+                cordova.plugins.batteryStatus.getStatus(
+                    status => {
+                        const batteryInfo = {
+                            level: status.level * 100,
+                            isPlugged: status.isPlugged,
+                            isLow: status.isLow
+                        };
+                        console.log('[Knox API] Battery info retrieved:', batteryInfo);
+                        resolve({ success: true, battery: batteryInfo });
+                    },
+                    error => {
+                        console.error('[Knox API] Failed to get battery info:', error);
+                        resolve({ success: false, error: error.message });
+                    }
+                );
                     console.log('[Knox API] Battery info retrieved:', batteryInfo);
                     resolve({ success: true, battery: batteryInfo });
                 }).catch(error => {

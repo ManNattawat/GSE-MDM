@@ -100,6 +100,106 @@ body {
     border: 1px solid #e1e8ed;
 }
 
+.onboarding-section {
+    border-left: 4px solid #3498db;
+}
+
+.onboarding-description {
+    margin-bottom: 15px;
+    color: #34495e;
+}
+
+.onboarding-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.onboarding-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid #ecf0f1;
+    background: #fdfdfd;
+}
+
+.onboarding-item.completed {
+    border-color: #2ecc71;
+    background: #edf8f2;
+}
+
+.onboarding-item.missing {
+    border-color: #e67e22;
+}
+
+.onboarding-item.loading {
+    opacity: 0.7;
+}
+
+.onboarding-status.dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #bdc3c7;
+}
+
+.onboarding-item.completed .onboarding-status.dot {
+    background: #2ecc71;
+}
+
+.onboarding-item.missing .onboarding-status.dot {
+    background: #e67e22;
+}
+
+.onboarding-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.onboarding-title {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.onboarding-note {
+    color: #7f8c8d;
+    font-size: 13px;
+}
+
+.onboarding-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.onboarding-actions .btn-secondary {
+    background: #ecf0f1;
+    color: #2c3e50;
+}
+
+.onboarding-actions .btn-secondary:hover {
+    background: #d0d6dc;
+}
+
+.onboarding-hint {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #7f8c8d;
+}
+
+.onboarding-section[data-all-complete="true"] {
+    border-left-color: #2ecc71;
+}
+
+.onboarding-section[data-all-complete="true"] .onboarding-description {
+    color: #2c3e50;
+}
+
 .section h2 {
     color: #2c3e50;
     margin-bottom: 15px;

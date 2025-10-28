@@ -8,6 +8,8 @@
  * - Database operations via Supabase
  */
 
+import './telemetry.js';
+
 class GSEKnoxAgent {
     constructor() {
         this.config = {
@@ -57,12 +59,15 @@ class GSEKnoxAgent {
             // Update UI status
             this.updateConnectionStatus('connecting', 'Initializing...');
             
-            // Initialize Knox API
-            this.components.knoxAPI = new KnoxAPI();
-            await this.components.knoxAPI.initialize();
-            this.log('success', 'Knox API initialized');
+            // Initialize Native Control Bridge
+            if (!window.nativeControls) {
+                throw new Error('Native control bridge not available');
+            }
+            await window.nativeControls.initialize();
+            this.components.knoxAPI = null;
+            this.log('success', 'Native control bridge initialized');
             
-            // Get device information from Samsung Knox (NO MOCK DATA)
+            // Get device information (standard Android APIs)
             this.state.deviceInfo = await this.getDeviceInformation();
             this.updateDeviceInfoUI();
             this.log('success', 'Device information retrieved');
@@ -76,7 +81,7 @@ class GSEKnoxAgent {
             });
             
             // Initialize device controller
-            this.components.deviceController = new DeviceController(this.components.knoxAPI);
+            this.components.deviceController = new DeviceController();
             
             // Initialize policy manager
             this.components.policyManager = new PolicyManager(this.components.knoxAPI);
@@ -280,38 +285,36 @@ class GSEKnoxAgent {
             let result = null;
             
             switch (command.type) {
-                case 'LOCK':
+                case 'LOCK_DEVICE':
                     result = await this.components.deviceController.lockDevice();
                     break;
-                    
-                case 'UNLOCK':
+                case 'UNLOCK_DEVICE':
                     result = await this.components.deviceController.unlockDevice();
                     break;
-                    
-                case 'WIPE':
+                case 'WIPE_DEVICE':
                     result = await this.components.deviceController.wipeDevice();
                     break;
-                    
-                case 'REBOOT':
+                case 'REBOOT_DEVICE':
                     result = await this.components.deviceController.rebootDevice();
                     break;
-                    
-                case 'KIOSK_MODE':
-                    result = await this.components.deviceController.enableKioskMode(command.payload);
+                case 'START_KIOSK':
+                    result = await this.components.deviceController.enableKioskMode(command.payload || {});
                     break;
-                    
-                case 'UPDATE_POLICY':
-                    result = await this.components.policyManager.updatePolicy(command.payload);
+                case 'STOP_KIOSK':
+                    result = await this.components.deviceController.disableKioskMode();
                     break;
-                    
+                case 'DISABLE_CAMERA':
+                    result = await this.components.deviceController.setCameraEnabled(false);
+                    break;
+                case 'ENABLE_CAMERA':
+                    result = await this.components.deviceController.setCameraEnabled(true);
+                    break;
                 case 'STATUS_CHECK':
                     result = await this.getDeviceStatus();
                     break;
-                    
                 case 'SCREENSHOT':
                     result = await this.components.deviceController.takeScreenshot();
                     break;
-                    
                 default:
                     throw new Error(`Unknown command type: ${command.type}`);
             }
@@ -343,6 +346,18 @@ class GSEKnoxAgent {
         
         if (this.state.isConnected) {
             this.components.websocketClient.send(JSON.stringify(response));
+        }
+
+        if (window.telemetry && typeof window.telemetry.reportResult === 'function') {
+            window.telemetry.reportResult(
+                { serverUrl: this.config.serverUrl, apiKey: this.config.apiKey },
+                {
+                    commandId,
+                    deviceId: this.state.deviceInfo.device_id,
+                    status,
+                    payload: result
+                }
+            );
         }
     }
     

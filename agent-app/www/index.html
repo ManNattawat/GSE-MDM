@@ -27,6 +27,27 @@
         
         <!-- Main Content -->
         <div class="content">
+            <!-- Onboarding Section -->
+            <div class="section onboarding-section" id="onboardingSection">
+                <h2>Initial Setup Checklist</h2>
+                <p class="onboarding-description">โปรดเปิดสิทธิ์ที่จำเป็นให้ครบถ้วนก่อนเริ่มใช้งานระบบควบคุมอุปกรณ์</p>
+                <div class="onboarding-list" id="onboardingList">
+                    <div class="onboarding-item loading">
+                        <span class="onboarding-status dot"></span>
+                        <div class="onboarding-details">
+                            <span class="onboarding-title">กำลังตรวจสอบสิทธิ์...</span>
+                            <span class="onboarding-note">กรุณารอสักครู่</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="onboarding-actions">
+                    <button class="btn btn-primary" id="onboardingRefreshBtn">รีเฟรชสถานะ</button>
+                </div>
+                <div class="onboarding-hint">
+                    <strong>หมายเหตุ:</strong> หากเปิดสิทธิ์แล้วให้กดรีเฟรชเพื่อตรวจสอบอีกครั้ง
+                </div>
+            </div>
+            
             <!-- Device Info Section -->
             <div class="section">
                 <h2>Device Information</h2>
@@ -132,6 +153,8 @@
     
     <!-- Scripts -->
     <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="js/native-controls.js"></script>
+    <script type="text/javascript" src="js/onboarding.js"></script>
     <script type="text/javascript" src="js/knox-api.js"></script>
     <script type="text/javascript" src="js/websocket-client.js"></script>
     <script type="text/javascript" src="js/device-controller.js"></script>
