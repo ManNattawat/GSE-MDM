@@ -41,8 +41,8 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           packages: |
-            build-tools;34.0.0
-            platforms;android-34
+            build-tools;33.0.2
+            platforms;android-33
 
       - name: Prepare Cordova Android platform
         working-directory: agent-app
