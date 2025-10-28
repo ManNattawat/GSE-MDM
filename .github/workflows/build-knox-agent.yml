@@ -55,7 +55,30 @@ jobs:
     - name: Show build outputs
       working-directory: ./agent-app
       run: ls -R platforms/android/app/build/outputs
-      
+
+    - name: Sign release APKs
+      if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+      working-directory: ./agent-app
+      env:
+        ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      run: |
+        echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > $HOME/android.keystore
+        for apk in platforms/android/app/build/outputs/apk/release/*.apk; do
+          if [ -f "$apk" ]; then
+            "$ANDROID_SDK_ROOT"/build-tools/33.0.0/apksigner sign \
+              --ks $HOME/android.keystore \
+              --ks-pass env:ANDROID_KEYSTORE_PASSWORD \
+              --key-pass env:ANDROID_KEY_PASSWORD \
+              --ks-key-alias "$ANDROID_KEY_ALIAS" \
+              "$apk"
+            "$ANDROID_SDK_ROOT"/build-tools/33.0.0/apksigner verify "$apk"
+          fi
+        done
+        rm -f $HOME/android.keystore
+
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
       with:
