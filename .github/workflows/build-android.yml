@@ -40,9 +40,7 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: |
-            build-tools;33.0.2
-            platforms;android-33
+          packages: tools platform-tools build-tools;33.0.2 platforms;android-33
 
       - name: Prepare Cordova Android platform
         working-directory: agent-app
