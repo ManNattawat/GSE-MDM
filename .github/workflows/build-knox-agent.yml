@@ -10,6 +10,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
     
     steps:
     - name: Checkout code
@@ -57,13 +62,8 @@ jobs:
       run: ls -R platforms/android/app/build/outputs
 
     - name: Sign release APKs
-      if: ${{ success() && (secrets.ANDROID_KEYSTORE_BASE64 != '') }}
+      if: ${{ success() && (env.ANDROID_KEYSTORE_BASE64 != '') }}
       working-directory: ./agent-app
-      env:
-        ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       run: |
         echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > $HOME/android.keystore
         for apk in platforms/android/app/build/outputs/apk/release/*.apk; do
